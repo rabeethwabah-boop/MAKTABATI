@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, count } from "drizzle-orm";
+import { Readable } from "stream";
 import { db, booksTable, subjectsTable, gradesTable } from "@workspace/db";
 import {
   GetBooksBySubjectParams,
@@ -89,6 +90,61 @@ router.get("/books", async (req, res): Promise<void> => {
     gradeId: b.gradeId,
     levelId: b.levelId,
   }))));
+});
+
+router.get("/books/:id/view", async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = Number(raw);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [book] = await db.select().from(booksTable).where(eq(booksTable.id, id));
+  if (!book || !book.downloadUrl) { res.status(404).json({ error: "Not found" }); return; }
+
+  try {
+    const upstream = await fetch(book.downloadUrl, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; Maktabati/1.0)" },
+    });
+    if (!upstream.ok) { res.status(502).json({ error: "Upstream error" }); return; }
+
+    res.setHeader("Content-Type", upstream.headers.get("Content-Type") || "application/pdf");
+    res.setHeader("Content-Disposition", "inline");
+    if (upstream.headers.get("Content-Length")) {
+      res.setHeader("Content-Length", upstream.headers.get("Content-Length")!);
+    }
+    const nodeStream = Readable.fromWeb(upstream.body as Parameters<typeof Readable.fromWeb>[0]);
+    nodeStream.pipe(res);
+    nodeStream.on("error", () => res.end());
+  } catch {
+    res.status(502).json({ error: "Proxy error" });
+  }
+});
+
+router.get("/books/:id/download", async (req, res): Promise<void> => {
+  const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const id = Number(raw);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [book] = await db.select().from(booksTable).where(eq(booksTable.id, id));
+  if (!book || !book.downloadUrl) { res.status(404).json({ error: "Not found" }); return; }
+
+  try {
+    const upstream = await fetch(book.downloadUrl, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; Maktabati/1.0)" },
+    });
+    if (!upstream.ok) { res.status(502).json({ error: "Upstream error" }); return; }
+
+    const safeName = book.title.replace(/[^\u0600-\u06FFa-zA-Z0-9 ._-]/g, "_").trim();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename*=UTF-8''${encodeURIComponent(safeName + ".pdf")}`);
+    if (upstream.headers.get("Content-Length")) {
+      res.setHeader("Content-Length", upstream.headers.get("Content-Length")!);
+    }
+    const nodeStream = Readable.fromWeb(upstream.body as Parameters<typeof Readable.fromWeb>[0]);
+    nodeStream.pipe(res);
+    nodeStream.on("error", () => res.end());
+  } catch {
+    res.status(502).json({ error: "Proxy error" });
+  }
 });
 
 router.get("/books/:id", async (req, res): Promise<void> => {

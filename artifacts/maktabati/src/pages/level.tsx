@@ -63,7 +63,7 @@ export default function LevelPage() {
           ))
         ) : grades && grades.length > 0 ? (
           grades.map(grade => (
-            <Link key={grade.id} href={`/grade/${grade.id}`}>
+            <Link key={grade.id} href={`/grade/${grade.id}/books`}>
               <div className="bg-card hover:bg-accent/50 border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex items-center gap-4 group cursor-pointer h-full">
                 <div className="p-3 bg-primary/10 rounded-full text-primary group-hover:scale-110 transition-transform">
                   <GraduationCap size={24} />

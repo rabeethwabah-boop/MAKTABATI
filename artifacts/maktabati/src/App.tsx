@@ -8,22 +8,28 @@ import LevelPage from "@/pages/level";
 import GradePage from "@/pages/grade";
 import GradeBooksPage from "@/pages/grade-books";
 import SubjectPage from "@/pages/subject";
+import BookViewerPage from "@/pages/book-viewer";
 import AppLayout from "@/components/layout/AppLayout";
 
 const queryClient = new QueryClient();
 
 function Router() {
   return (
-    <AppLayout>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/level/:id" component={LevelPage} />
-        <Route path="/grade/:id" component={GradePage} />
-        <Route path="/grade/:id/books" component={GradeBooksPage} />
-        <Route path="/subject/:id" component={SubjectPage} />
-        <Route component={NotFound} />
-      </Switch>
-    </AppLayout>
+    <Switch>
+      <Route path="/book/:id" component={BookViewerPage} />
+      <Route>
+        <AppLayout>
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/level/:id" component={LevelPage} />
+            <Route path="/grade/:id" component={GradePage} />
+            <Route path="/grade/:id/books" component={GradeBooksPage} />
+            <Route path="/subject/:id" component={SubjectPage} />
+            <Route component={NotFound} />
+          </Switch>
+        </AppLayout>
+      </Route>
+    </Switch>
   );
 }
 
