@@ -3,20 +3,27 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Maktabati API - Yemen School Books Library
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: levels
+    description: Educational levels
+  - name: grades
+    description: School grades
+  - name: subjects
+    description: Subjects per grade
+  - name: books
+    description: Books, summaries, and exams
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +31,208 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /levels:
+    get:
+      operationId: getLevels
+      tags: [levels]
+      summary: Get all educational levels
+      responses:
+        "200":
+          description: List of levels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Level"
+
+  /levels/{id}/grades:
+    get:
+      operationId: getGradesByLevel
+      tags: [levels]
+      summary: Get grades for a level
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of grades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Grade"
+
+  /grades:
+    get:
+      operationId: getGrades
+      tags: [grades]
+      summary: Get all grades
+      responses:
+        "200":
+          description: List of grades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Grade"
+
+  /grades/{id}:
+    get:
+      operationId: getGrade
+      tags: [grades]
+      summary: Get a single grade
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Grade details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Grade"
+        "404":
+          description: Not found
+
+  /grades/{id}/subjects:
+    get:
+      operationId: getSubjectsByGrade
+      tags: [grades]
+      summary: Get subjects for a grade
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of subjects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Subject"
+
+  /subjects/{id}:
+    get:
+      operationId: getSubject
+      tags: [subjects]
+      summary: Get a single subject
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Subject details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subject"
+        "404":
+          description: Not found
+
+  /subjects/{id}/books:
+    get:
+      operationId: getBooksBySubject
+      tags: [subjects]
+      summary: Get books for a subject
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Book"
+
+  /books:
+    get:
+      operationId: getBooks
+      tags: [books]
+      summary: Get books with optional filters
+      parameters:
+        - name: gradeId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: levelId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [book, summary, exam]
+      responses:
+        "200":
+          description: List of books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Book"
+
+  /books/{id}:
+    get:
+      operationId: getBook
+      tags: [books]
+      summary: Get a single book
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Book details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "404":
+          description: Not found
+
+  /stats:
+    get:
+      operationId: getStats
+      tags: [books]
+      summary: Get library statistics
+      responses:
+        "200":
+          description: Library stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stats"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +243,95 @@ components:
       required:
         - status
 
+    Level:
+      type: object
+      required: [id, name, nameAr, description, gradeRange, color, icon, order]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        nameAr:
+          type: string
+        description:
+          type: string
+        gradeRange:
+          type: string
+        color:
+          type: string
+        icon:
+          type: string
+        order:
+          type: integer
+
+    Grade:
+      type: object
+      required: [id, name, nameAr, levelId, order]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        nameAr:
+          type: string
+        levelId:
+          type: integer
+        order:
+          type: integer
+
+    Subject:
+      type: object
+      required: [id, name, nameAr, gradeId, icon, color]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        nameAr:
+          type: string
+        gradeId:
+          type: integer
+        icon:
+          type: string
+        color:
+          type: string
+
+    Book:
+      type: object
+      required: [id, title, subjectId, gradeId, levelId, type, coverColor]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        subjectId:
+          type: integer
+        gradeId:
+          type: integer
+        levelId:
+          type: integer
+        type:
+          type: string
+        coverColor:
+          type: string
+        coverImage:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        pages:
+          type: ["integer", "null"]
+        downloadUrl:
+          type: ["string", "null"]
+
+    Stats:
+      type: object
+      required: [totalBooks, totalSummaries, totalExams, totalGrades]
+      properties:
+        totalBooks:
+          type: integer
+        totalSummaries:
+          type: integer
+        totalExams:
+          type: integer
+        totalGrades:
+          type: integer
