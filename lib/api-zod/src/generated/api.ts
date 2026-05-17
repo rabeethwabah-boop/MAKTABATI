@@ -184,6 +184,50 @@ export const GetBookResponse = zod.object({
 
 
 /**
+ * @summary Request a presigned URL for file upload
+ */
+
+
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().min(1),
+  "contentType": zod.string().min(1)
+})
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string().url(),
+  "objectPath": zod.string()
+})
+
+
+/**
+ * @summary Serve an uploaded object
+ */
+export const GetStorageObjectParams = zod.object({
+  "objectPath": zod.coerce.string()
+})
+
+
+/**
+ * @summary Create a book record after upload
+ */
+export const CreateUploadedBookBody = zod.object({
+  "title": zod.string(),
+  "gradeId": zod.number(),
+  "subjectId": zod.number(),
+  "levelId": zod.number(),
+  "type": zod.enum(['book', 'summary', 'exam']),
+  "objectPath": zod.string(),
+  "coverImagePath": zod.string().nullish(),
+  "coverColor": zod.string().nullish(),
+  "description": zod.string().nullish()
+})
+
+
+/**
  * @summary Get library statistics
  */
 export const GetStatsResponse = zod.object({

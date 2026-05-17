@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { useParams, Link } from "wouter";
 import { useGetGrade, useGetLevels, useGetBooks, useGetSubjectsByGrade } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, BookOpen, FileText, FileSpreadsheet } from "lucide-react";
+import { ChevronLeft, BookOpen, FileText, FileSpreadsheet, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import BookCard from "@/components/ui/BookCard";
 import {
   Breadcrumb,
@@ -113,7 +114,7 @@ export default function GradeBooksPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="pb-4 border-b">
+      <div className="pb-4 border-b flex items-center justify-between gap-4 flex-wrap">
         {gradeLoading ? (
           <Skeleton className="h-10 w-64 mb-2" />
         ) : (
@@ -121,6 +122,14 @@ export default function GradeBooksPage() {
             <BookOpen className="text-primary" />
             <span>محتوى {grade?.nameAr}</span>
           </h1>
+        )}
+        {!gradeLoading && (
+          <Link href={`/grade/${gradeId}/upload`}>
+            <Button variant="outline" className="gap-2 rounded-xl border-primary text-primary hover:bg-primary hover:text-white">
+              <Upload size={18} />
+              <span>رفع كتاب جديد</span>
+            </Button>
+          </Link>
         )}
       </div>
 

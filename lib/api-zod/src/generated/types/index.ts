@@ -7,6 +7,9 @@
  */
 
 export * from './book';
+export * from './createBookInput';
+export * from './createBookInputType';
+export * from './errorEnvelope';
 export * from './getBooksParams';
 export * from './getBooksType';
 export * from './grade';
@@ -14,3 +17,5 @@ export * from './healthStatus';
 export * from './level';
 export * from './stats';
 export * from './subject';
+export * from './uploadUrlRequest';
+export * from './uploadUrlResponse';

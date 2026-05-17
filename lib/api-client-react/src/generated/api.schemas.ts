@@ -62,6 +62,48 @@ export interface Stats {
   totalGrades: number;
 }
 
+export interface UploadUrlRequest {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+}
+
+export interface ErrorEnvelope {
+  error: string;
+}
+
+export type CreateBookInputType = typeof CreateBookInputType[keyof typeof CreateBookInputType];
+
+
+export const CreateBookInputType = {
+  book: 'book',
+  summary: 'summary',
+  exam: 'exam',
+} as const;
+
+export interface CreateBookInput {
+  title: string;
+  gradeId: number;
+  subjectId: number;
+  levelId: number;
+  type: CreateBookInputType;
+  objectPath: string;
+  /** @nullable */
+  coverImagePath?: string | null;
+  /** @nullable */
+  coverColor?: string | null;
+  /** @nullable */
+  description?: string | null;
+}
+
 export type GetBooksParams = {
 gradeId?: number;
 levelId?: number;

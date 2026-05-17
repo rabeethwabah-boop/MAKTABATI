@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq, and, count } from "drizzle-orm";
 import { Readable } from "stream";
 import { db, booksTable, subjectsTable, gradesTable } from "@workspace/db";
+import { z } from "zod";
 import {
   GetBooksBySubjectParams,
   GetBooksBySubjectResponse,
@@ -11,6 +12,18 @@ import {
   GetBookResponse,
   GetStatsResponse,
 } from "@workspace/api-zod";
+
+const CreateBookInputSchema = z.object({
+  title: z.string().min(1),
+  gradeId: z.number().int().positive(),
+  subjectId: z.number().int().positive(),
+  levelId: z.number().int().positive(),
+  type: z.enum(["book", "summary", "exam"]),
+  objectPath: z.string().min(1),
+  coverImagePath: z.string().nullable().optional(),
+  coverColor: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+});
 
 const router: IRouter = Router();
 
@@ -173,6 +186,45 @@ router.get("/books/:id", async (req, res): Promise<void> => {
     gradeId: book.gradeId,
     levelId: book.levelId,
   }));
+});
+
+router.post("/books/upload", async (req, res): Promise<void> => {
+  const parsed = CreateBookInputSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const { title, gradeId, subjectId, levelId, type, objectPath, coverImagePath, coverColor, description } = parsed.data;
+  const downloadUrl = `/api/storage${objectPath}`;
+  const coverImage = coverImagePath ? `/api/storage${coverImagePath}` : null;
+  const [book] = await db.insert(booksTable).values({
+    title,
+    gradeId,
+    subjectId,
+    levelId,
+    type,
+    downloadUrl,
+    coverImage,
+    coverColor: coverColor ?? "#6366f1",
+    description: description ?? null,
+  }).returning();
+  if (!book) {
+    res.status(500).json({ error: "Failed to create book" });
+    return;
+  }
+  res.status(201).json({
+    id: book.id,
+    title: book.title,
+    subjectId: book.subjectId,
+    gradeId: book.gradeId,
+    levelId: book.levelId,
+    type: book.type,
+    coverColor: book.coverColor,
+    coverImage: book.coverImage ?? null,
+    description: book.description ?? null,
+    pages: book.pages ?? null,
+    downloadUrl: book.downloadUrl ?? null,
+  });
 });
 
 router.get("/stats", async (_req, res): Promise<void> => {
