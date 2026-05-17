@@ -227,6 +227,35 @@ router.post("/books/upload", async (req, res): Promise<void> => {
   });
 });
 
+router.delete("/books/:id", async (req, res): Promise<void> => {
+  const id = Number(req.params.id);
+  if (!id || isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  const [deleted] = await db.delete(booksTable).where(eq(booksTable.id, id)).returning();
+  if (!deleted) { res.status(404).json({ error: "Book not found" }); return; }
+  res.status(204).end();
+});
+
+const PatchBookSchema = z.object({
+  title: z.string().min(1).optional(),
+  type: z.enum(["book", "summary", "exam"]).optional(),
+  subjectId: z.number().int().positive().optional(),
+  coverColor: z.string().optional(),
+  description: z.string().nullable().optional(),
+});
+
+router.patch("/books/:id", async (req, res): Promise<void> => {
+  const id = Number(req.params.id);
+  if (!id || isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  const parsed = PatchBookSchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+  const [updated] = await db.update(booksTable).set(parsed.data).where(eq(booksTable.id, id)).returning();
+  if (!updated) { res.status(404).json({ error: "Book not found" }); return; }
+  res.json({ id: updated.id, title: updated.title, type: updated.type, subjectId: updated.subjectId,
+    gradeId: updated.gradeId, levelId: updated.levelId, coverColor: updated.coverColor,
+    coverImage: updated.coverImage ?? null, description: updated.description ?? null,
+    pages: updated.pages ?? null, downloadUrl: updated.downloadUrl ?? null });
+});
+
 router.get("/stats", async (_req, res): Promise<void> => {
   const [booksCount] = await db
     .select({ count: count() })

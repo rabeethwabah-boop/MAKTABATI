@@ -1,7 +1,9 @@
-import { Link } from "wouter";
-import { BookOpen } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { BookOpen, LayoutDashboard } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const [location] = useLocation();
   return (
     <div className="min-h-[100dvh] flex flex-col w-full bg-background" dir="rtl">
       <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-md">
@@ -11,6 +13,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <BookOpen size={24} />
             </div>
             <span className="font-bold text-xl text-primary tracking-tight">مكتبتي</span>
+          </Link>
+          <Link href="/admin">
+            <Button
+              variant={location === "/admin" ? "default" : "ghost"}
+              size="sm"
+              className="gap-2 rounded-xl">
+              <LayoutDashboard size={17} />
+              <span className="hidden sm:inline">الإدارة</span>
+            </Button>
           </Link>
         </div>
       </header>

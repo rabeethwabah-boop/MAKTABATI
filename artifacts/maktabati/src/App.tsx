@@ -10,6 +10,7 @@ import GradeBooksPage from "@/pages/grade-books";
 import SubjectPage from "@/pages/subject";
 import BookViewerPage from "@/pages/book-viewer";
 import GradeUploadPage from "@/pages/grade-upload";
+import AdminPage from "@/pages/admin";
 import AppLayout from "@/components/layout/AppLayout";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ function Router() {
             <Route path="/grade/:id" component={GradePage} />
             <Route path="/grade/:id/books" component={GradeBooksPage} />
             <Route path="/grade/:id/upload" component={GradeUploadPage} />
+            <Route path="/admin" component={AdminPage} />
             <Route path="/subject/:id" component={SubjectPage} />
             <Route component={NotFound} />
           </Switch>
